@@ -5,3 +5,5 @@ authors = ["Galo Navarro <anglorvaroa@gmail.com>"]
 
 [dependencies]
 hyper = "0.9.14"
+serde = "0.8"
+serde_json = "0.8"

@@ -1,11 +1,11 @@
 extern crate hyper;
+extern crate serde_json;
 
-use std::env;
 use hyper::client::Client;
 use hyper::header::ContentType;
+use std::env;
 use std::io::Read;
-
-// TODO: move these to config
+use serde_json::Value;
 
 fn main() {
 
@@ -15,8 +15,12 @@ fn main() {
 
     let client = Client::new();
 
-    let get_json = format!("{{\"access_token\":\"{}\", \"consumer_key\":\"{}\",\"count\":\"{}\"}}",
-                           access_token, consumer_key, 10);
+    let get_json = format!(
+            "{{\"access_token\":\"{}\",
+            \"consumer_key\":\"{}\",
+            \"count\":\"{}\",
+            \"favorite\":1}}",
+            access_token, consumer_key, 10);
 
     let mut res = client.post(api)
         .body(&get_json)
@@ -25,9 +29,20 @@ fn main() {
         .unwrap();
     assert_eq!(res.status, hyper::Ok);
 
-    let mut text = String::new();
-    let _ = res.read_to_string(&mut text).unwrap();
+    let mut raw_json = String::new();
+    let _ = res.read_to_string(&mut raw_json).unwrap();
 
-    println!("The text is: {}", text);
+    let json: Value = serde_json::from_str(&raw_json).unwrap();
+    if let &Value::Object(ref o) = json.find_path(&["list"]).unwrap() {
+        for (item_id, vals) in o {
+            on_item(item_id, vals);
+        }
+    }
+
     assert_eq!(res.status, hyper::Ok);
+}
+
+fn on_item(item_id: &String, val: &Value) {
+    let url = val.find_path(&["resolved_url"]).unwrap();
+    println!("{} {:?}", item_id, url);
 }
