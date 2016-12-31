@@ -93,8 +93,13 @@ fn process_batch(res: &mut Response, cfg: &Config) {
 
 fn store(item_id: &String, val: &Value, output_dir: &str) {
 
-    let url = val.find_path(&["resolved_url"]).unwrap();
-    let title = val.find_path(&["given_title"]).unwrap().as_str().unwrap();
+    let url = val.find_path(&["resolved_url"]).unwrap().as_str().unwrap();
+    let mut title = resolve_title(val);
+
+    if title.is_empty() {
+        title = url.clone();
+        println!("Can't resolve title fallback to URL: {}", title);
+    }
 
     let file_name = clean_title(&title);
     let out_path = Path::new(output_dir).join(&file_name);
@@ -106,7 +111,7 @@ fn store(item_id: &String, val: &Value, output_dir: &str) {
     let f = File::create(out_path).expect("Unable to open output file");
     let out = Command::new("links")
         .arg("-dump")
-        .arg(url.as_str().unwrap())
+        .arg(url)
         .output()
         .expect("Unable to dump url");
 
@@ -117,10 +122,28 @@ fn store(item_id: &String, val: &Value, output_dir: &str) {
 
 }
 
+/*
+ * The given title is preferred, but sometimes not present, so fallback to the
+ * one resolved by Pocket.
+ */
+fn resolve_title(val: &Value) -> &str {
+    let mut t: &str = match val.find_path(&["given_title"]) {
+        Some(s) => s.as_str().unwrap(),
+        None => "",
+    };
+    if t.is_empty() {
+        t = val.find_path(&["resolved_title"]).unwrap().as_str().unwrap();
+    }
+    return t;
+}
+
 fn clean_title(t: &str) -> String {
     return str::replace(t, " ", "_")
         .replace(":", "_")
         .replace(",", "_")
+        .replace("'", "")
+        .replace("(", "")
+        .replace(")", "")
         .replace("|", "_by_")
         .replace("/", "_")
 }
