@@ -1,17 +1,19 @@
+extern crate getopts;
 extern crate hyper;
 extern crate serde_json;
 
-use hyper::client::Response;
+use getopts::Options;
 use hyper::client::Client;
+use hyper::client::Response;
 use hyper::header::ContentType;
 use serde_json::Value;
 use std::env;
-use std::fs;
 use std::fs::File;
+use std::fs;
 use std::io::Read;
 use std::io::{Write, BufWriter};
-use std::process::Command;
 use std::path::Path;
+use std::process::Command;
 
 struct Config {
     api: String,
@@ -22,11 +24,21 @@ struct Config {
 
 fn main() {
 
+    let args: Vec<String> = env::args().collect();
+    let mut opts = Options::new();
+    opts.reqopt("k", "consumer_key", "Pocket's consumer key", "NAME");
+    opts.reqopt("t", "access_token", "Pocket's access token", "NAME");
+    opts.reqopt("o", "base_dir", "Base directory to store articles", "NAME");
+    let matches = match opts.parse(&args[1..]) {
+        Ok(m) => { m }
+        Err(f) => { panic!(f.to_string()) }
+    };
+
     let cfg = Config{
         api: String::from("https://getpocket.com/v3/get"),
-        consumer_key: env::var("CONSUMER_KEY").unwrap(),
-        access_token: env::var("ACCESS_TOKEN").unwrap(),
-        output_dir: String::from("target/library"),
+        consumer_key: matches.opt_str("k").unwrap(),
+        access_token: matches.opt_str("t").unwrap(),
+        output_dir: matches.opt_str("o").unwrap(),
     };
 
     println!("Ensuring that {} exists..", cfg.output_dir);
@@ -46,9 +58,17 @@ fn query_favourites(client: &Client, cfg: &Config) -> Response {
     let get_json = format!(
             "{{\"access_token\":\"{}\",
             \"consumer_key\":\"{}\",
-            \"count\":\"{}\",
             \"favorite\":1}}",
-            cfg.access_token, cfg.consumer_key, 10);
+            cfg.access_token, cfg.consumer_key);
+
+    /*
+     * Add:
+     *
+     *  \"count\":\"{}\",
+     *
+     * to limit the number of items pulled.  a Since or similar would make more
+     * sense.
+     */
 
     let res = client.post(&cfg.api)
         .body(&get_json)

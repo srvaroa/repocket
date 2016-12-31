@@ -7,3 +7,4 @@ authors = ["Galo Navarro <anglorvaroa@gmail.com>"]
 hyper = "0.9.14"
 serde = "0.8"
 serde_json = "0.8"
+getopts = "0.2"
