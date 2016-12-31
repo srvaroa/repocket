@@ -1,0 +1,7 @@
+[package]
+name = "repocket"
+version = "0.1.0"
+authors = ["Galo Navarro <anglorvaroa@gmail.com>"]
+
+[dependencies]
+hyper = "0.9.14"
