@@ -1,11 +1,13 @@
 extern crate getopts;
 extern crate hyper;
+extern crate regex;
 extern crate serde_json;
 
 use getopts::Options;
 use hyper::client::Client;
 use hyper::client::Response;
 use hyper::header::ContentType;
+use regex::Regex;
 use serde_json::Value;
 use std::env;
 use std::fs::File;
@@ -20,7 +22,9 @@ struct Config {
     consumer_key: String,
     access_token: String,
     output_dir: String,
+    regex: Regex,
 }
+
 
 fn main() {
 
@@ -39,6 +43,7 @@ fn main() {
         consumer_key: matches.opt_str("k").unwrap(),
         access_token: matches.opt_str("t").unwrap(),
         output_dir: matches.opt_str("o").unwrap(),
+        regex: Regex::new(r"[^a-zA-Z\d\\-_]").unwrap(),
     };
 
     println!("Ensuring that {} exists..", cfg.output_dir);
@@ -86,12 +91,12 @@ fn process_batch(res: &mut Response, cfg: &Config) {
     let json: Value = serde_json::from_str(&raw_json).unwrap();
     if let &Value::Object(ref o) = json.find_path(&["list"]).unwrap() {
         for (item_id, vals) in o {
-            store(item_id, vals, &cfg.output_dir);
+            store(item_id, vals, &cfg);
         }
     }
 }
 
-fn store(item_id: &String, val: &Value, output_dir: &str) {
+fn store(item_id: &String, val: &Value, cfg: &Config) {
 
     let url = val.find_path(&["resolved_url"]).unwrap().as_str().unwrap();
     let mut title = resolve_title(val);
@@ -101,8 +106,8 @@ fn store(item_id: &String, val: &Value, output_dir: &str) {
         println!("Can't resolve title fallback to URL: {}", title);
     }
 
-    let file_name = clean_title(&title);
-    let out_path = Path::new(output_dir).join(&file_name);
+    let file_name = format!("{}/{}", cfg.output_dir, clean_title(&title, &cfg.regex));
+    let out_path = Path::new(&file_name);
     if out_path.exists() {
         println!("File already exists {:?}", out_path);
         return;
@@ -118,7 +123,7 @@ fn store(item_id: &String, val: &Value, output_dir: &str) {
     let mut f = BufWriter::new(f);
     f.write_all(&out.stdout).expect("Unable to write data");
 
-    println!("Saved {} {} at {}/{:?}", item_id, url, output_dir, file_name);
+    println!("Saved {} {} at {:?}", item_id, url, out_path);
 
 }
 
@@ -137,13 +142,11 @@ fn resolve_title(val: &Value) -> &str {
     return t;
 }
 
-fn clean_title(t: &str) -> String {
-    return str::replace(t, " ", "_")
+fn clean_title(t: &str, regex: &Regex) -> String {
+    let mut clean_t = str::replace(t, " ", "_")
         .replace(":", "_")
-        .replace(",", "_")
-        .replace("'", "")
-        .replace("(", "")
-        .replace(")", "")
-        .replace("|", "_by_")
         .replace("/", "_")
+        .replace("|", "_by_");
+    clean_t = regex.replace_all(&clean_t, "");
+    return clean_t;
 }
