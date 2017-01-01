@@ -121,6 +121,8 @@ fn store(item_id: &String, val: &Value, cfg: &Config) {
         .expect("Unable to dump url");
 
     let mut f = BufWriter::new(f);
+    f.write_fmt(format_args!("Source URL: {}\n\n", url))
+        .expect("Unable to write source URL");
     f.write_all(&out.stdout).expect("Unable to write data");
 
     println!("Saved {} {} at {:?}", item_id, url, out_path);
