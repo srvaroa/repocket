@@ -26,11 +26,11 @@ Run
 
 The $CONSUMER_KEY is obtained by creating a new application in the
 GetPocket web interface at https://getpocket.com/developer/apps/new.
-Feel free to use mine: 61972-a63858eb2fdd9aa63e2dcc76.
+Feel free to use mine: 80615-3ec69aeda3dd38e7f216ba94
 
 Once you have it, run:
 
-    ./retrieve_token 61972-a63858eb2fdd9aa63e2dcc76
+    ./retrieve_token 80615-3ec69aeda3dd38e7f216ba94
 
 And follow the instructions.  You'll need to open a link in your browser
 (where you are assumed to be logged into Pocket) and authorize the
