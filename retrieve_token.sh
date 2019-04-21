@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $# -lt 1 ]; then
-    echo "usage: retrieve_token <consumer_key>"
+    echo "usage: $0 <consumer_key>"
     exit 1
 fi
 

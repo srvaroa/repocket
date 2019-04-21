@@ -8,7 +8,7 @@ reliable storage.  Also, grep.
 Building
 --------
 
-Rust, openssl and OSX woes:
+If on OSX, there are Rust, openssl and OSX woes to solve:
 
 https://stackoverflow.com/questions/34612395/openssl-crate-fails-compilation-on-mac-os-x-10-11
 
@@ -20,24 +20,27 @@ https://stackoverflow.com/questions/34612395/openssl-crate-fails-compilation-on-
 Run
 ---
 
+You *MUST* have `links2` installed (links should also work, but you'll
+need to create an alias.)
+
     cargo run -- -k $CONSUMER_KEY \
                  -t $ACCESS_TOKEN \
                  -o $TARGET_DIR
 
-The $CONSUMER_KEY is obtained by creating a new application in the
+The `$CONSUMER_KEY` is obtained by creating a new application in the
 GetPocket web interface at https://getpocket.com/developer/apps/new.
-Feel free to use mine: 80615-3ec69aeda3dd38e7f216ba94
+Feel free to use mine: 85480-9793dd8ed508561cb941d987
 
 Once you have it, run:
 
-    ./retrieve_token 80615-3ec69aeda3dd38e7f216ba94
+    ./retrieve_token.sh 85480-9793dd8ed508561cb941d987
 
 And follow the instructions.  You'll need to open a link in your browser
 (where you are assumed to be logged into Pocket) and authorize the
 application (this will redirect to a non existent page, just ignore it).
 
 Now go back to the script and press any key to continue.  You'll see the
-$ACCESS_TOKEN on screen.
+`$ACCESS_TOKEN` on screen.
 
 TODO
 ----

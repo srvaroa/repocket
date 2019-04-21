@@ -1,3 +1,4 @@
 target
 *.swp
-run
+run.sh
+access_token

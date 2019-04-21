@@ -114,7 +114,7 @@ fn store(item_id: &String, val: &Value, cfg: &Config) {
     }
 
     let f = File::create(out_path).expect("Unable to open output file");
-    let out = Command::new("links")
+    let out = Command::new("links2")
         .arg("-dump")
         .arg(url)
         .output()
