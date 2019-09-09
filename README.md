@@ -5,48 +5,67 @@ Repocket is a (raw) tool to download favourited articles on
 [Pocket](https://getpocket.com).  Because, you know, The Cloud is not a
 reliable storage.  Also, grep.
 
-Building
---------
+Repocket will retrieve the list of starred links, download a plain text
+copy of the link, and store it in disk.  It works in Linux, might work
+in OSX (untested) and will very likely not in Windows (although it
+should be trivial to fix.)
 
-If on OSX, there are Rust, openssl and OSX woes to solve:
+Dependencies
+------------
 
-https://stackoverflow.com/questions/34612395/openssl-crate-fails-compilation-on-mac-os-x-10-11
-
-    $ export OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include
-    $ export OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib
-
-    $ cargo build
-
-Run
----
+Go >= 1.11.
 
 You *MUST* have `links2` installed (links should also work, but you'll
-need to create an alias.)
+need to create an alias.)  Repocket uses `links2` to render the articles
+into plain text.
 
-    cargo run -- -k $CONSUMER_KEY \
-                 -t $ACCESS_TOKEN \
-                 -o $TARGET_DIR
+Exporting your list
+-------------------
 
-The `$CONSUMER_KEY` is obtained by creating a new application in the
-GetPocket web interface at https://getpocket.com/developer/apps/new.
-Feel free to use mine: 85480-9793dd8ed508561cb941d987
+    make
 
-Once you have it, run:
+Repocket will first authenticate against the Pocket API.  It will ask
+you to browse to a URL where you can grant permissions to read your
+list of articles.  The message looks something like this:
 
-    ./retrieve_token.sh 85480-9793dd8ed508561cb941d987
+    2019/09/09 20:40:12 Browse to this URL, you may ignore errors:
+    https://getpocket.com/auth/authorize?request_token=62074b8c-ed8a-b5e5-71f3-586bcf&redirect_uri=localhost
 
-And follow the instructions.  You'll need to open a link in your browser
-(where you are assumed to be logged into Pocket) and authorize the
-application (this will redirect to a non existent page, just ignore it).
+Click on the link and accept the authorisation.  Once you do this the
+first time, you simply need to click the link and ignore the browser.
 
-Now go back to the script and press any key to continue.  You'll see the
-`$ACCESS_TOKEN` on screen.
+Once you're done, click enter on the console and watch articles being
+downloaded.
+
+You can run the same command several times and it'll skip through
+articles that are already downloaded, adding only new ones.
+
+Configuration
+-------------
+
+You may (and probably want to) set two environment variables:
+
+- `$CONSUMER_KEY` is obtained by creating a new application in the
+  GetPocket web interface at https://getpocket.com/developer/apps/new.
+  Feel free to use mine: 85480-9793dd8ed508561cb941d987.  This is the
+  default value.
+
+- `OUTPUT_DIR` is the directory where all files with downloaded articles
+  will be stored.  The directory *must* exist.  The default value is
+  ./repocket
+
+For example
+
+    OUTPUT_DIR=/some/other/dir make
+
+Would download articles to `/some/other/dir`.
 
 TODO
 ----
 
-At the moment each run pulls the entire list of favourites and stores
-those that are not present in the target folder.  Ideally this thing
-would run on cron, and should use `since` or a similar param to request
-new items.
+Some things I'd like to implement:
 
+* Don't download the entire list, using the "since" parameter to
+  retrieve new articles from the last run. 
+* Store credentials in a file to avoid doing the auth ritual on every
+  run.
