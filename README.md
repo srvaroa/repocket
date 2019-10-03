@@ -45,7 +45,7 @@ Configuration
 
 You may (and probably want to) set two environment variables:
 
-- `$CONSUMER_KEY` is obtained by creating a new application in the
+- `CONSUMER_KEY` is obtained by creating a new application in the
   GetPocket web interface at https://getpocket.com/developer/apps/new.
   Feel free to use mine: 85480-9793dd8ed508561cb941d987.  This is the
   default value.
