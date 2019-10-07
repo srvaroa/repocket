@@ -21,9 +21,9 @@ Dependencies
 
 Go >= 1.11.
 
-You *MUST* have `links2` installed (links should also work, but you'll
-need to create an alias.)  Repocket uses `links2` to render the articles
-into plain text.
+You *MUST* have [w3m](http://w3m.sourceforge.net/) installed. Repocket
+uses [w3m](http://w3m.sourceforge.net/) to render the articles into
+plain text.
 
 Exporting your list
 -------------------

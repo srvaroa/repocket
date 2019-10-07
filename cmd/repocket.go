@@ -32,7 +32,7 @@ func ensureDir(path string) {
 }
 
 func getArticleContents(a *pocket.Article) ([]byte, error) {
-	return exec.Command("links2", "-dump", a.ResolvedUrl).Output()
+	return exec.Command("w3m", "-dump", a.ResolvedUrl).Output()
 }
 
 func dumpArticle(outputDir string, a *pocket.Article) {
