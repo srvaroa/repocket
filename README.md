@@ -67,5 +67,3 @@ Some things I'd like to implement:
 
 * Don't download the entire list, using the "since" parameter to
   retrieve new articles from the last run. 
-* Store credentials in a file to avoid doing the auth ritual on every
-  run.

@@ -67,8 +67,8 @@ func QueryFavourites(accessToken, consumerKey string) map[string]Article {
 
 }
 
-// TODO use a config file to store credentials and spare
-// authenticating over and over again
+// Authorize returns the token for the given consumer key by firing
+// GetPocket's auth process.
 func Authorize(consumerKey string) (string, error) {
 
 	log.Printf("Fetching token for consumer key: %s", consumerKey)

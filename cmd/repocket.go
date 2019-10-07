@@ -9,6 +9,7 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/srvaroa/repocket/pkg/pocket"
+	"github.com/srvaroa/repocket/pkg/repocket"
 )
 
 type config struct {
@@ -16,8 +17,6 @@ type config struct {
 	AccessToken string
 	OutputDir   string `required:"true" split_words:"true"`
 }
-
-const RepocketConfigFile = ".repocket"
 
 func ensureDir(path string) {
 	f, err := os.Stat(path)
@@ -78,9 +77,19 @@ func main() {
 	}
 
 	ensureDir(cfg.OutputDir)
-	cfg.AccessToken, err = pocket.Authorize(cfg.ConsumerKey)
+
+	cfg.AccessToken, err = repocket.LoadLocalConfig()
 	if err != nil {
-		log.Fatal("Failed to authorize against Pocket", err)
+		log.Printf("Could not load local config, authorizing against"+
+			" GetPocket's API: %s", err)
+		cfg.AccessToken, err = pocket.Authorize(cfg.ConsumerKey)
+		if err != nil {
+			log.Fatal("Failed to authorize against Pocket: %s", err)
+		}
+		err = repocket.SaveLocalConfig(cfg.AccessToken)
+		if err != nil {
+			log.Printf("Failed to persist user token: %s", err)
+		}
 	}
 
 	list := pocket.QueryFavourites(cfg.AccessToken, cfg.ConsumerKey)
