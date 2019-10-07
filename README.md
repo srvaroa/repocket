@@ -5,10 +5,16 @@ Repocket is a (raw) tool to download favourited articles on
 [Pocket](https://getpocket.com).  Because, you know, The Cloud is not a
 reliable storage.  Also, grep.
 
-Repocket will retrieve the list of starred links, download a plain text
-copy of the link, and store it in disk.  It works in Linux, might work
-in OSX (untested) and will very likely not in Windows (although it
-should be trivial to fix.)
+Repocket has some basic operations:
+
+* `dump`: to retrieve the list of starred links, download a plain text
+  copy of the link, and store it in disk.  It works in Linux, might work
+  in OSX (untested) and will very likely not in Windows (although it
+  should be trivial to fix.)
+* `list`: to retrieve the list of favourited articles (title, url)
+
+Coming:
+* `next`: to dump the contents of the newest article in your list
 
 Dependencies
 ------------
@@ -22,7 +28,7 @@ into plain text.
 Exporting your list
 -------------------
 
-    make
+    make dump
 
 Repocket will first authenticate against the Pocket API.  It will ask
 you to browse to a URL where you can grant permissions to read your
@@ -51,8 +57,7 @@ You may (and probably want to) set two environment variables:
   default value.
 
 - `OUTPUT_DIR` is the directory where all files with downloaded articles
-  will be stored.  The directory *must* exist.  The default value is
-  ./repocket
+  will be stored.  The default value is ./repocket
 
 For example
 

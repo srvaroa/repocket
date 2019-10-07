@@ -41,11 +41,20 @@ type Article struct {
 const apiUrl = "https://getpocket.com/v3"
 
 func QueryFavourites(accessToken, consumerKey string) map[string]Article {
+	return query(accessToken, consumerKey, 1)
+}
+
+func QueryAll(accessToken, consumerKey string) map[string]Article {
+	return query(accessToken, consumerKey, 0)
+}
+
+func query(accessToken, consumerKey string, favourites int) map[string]Article {
 
 	payload := map[string]interface{}{
 		"access_token": accessToken,
 		"consumer_key": consumerKey,
-		"favorite":     1,
+		"favorite":     favourites,
+		"sort":         "newest",
 	}
 
 	data, _ := json.Marshal(payload)
@@ -61,6 +70,7 @@ func QueryFavourites(accessToken, consumerKey string) map[string]Article {
 	}
 
 	var retrieved retrieveResponse
+
 	json.Unmarshal(body, &retrieved)
 
 	return retrieved.List
