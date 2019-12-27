@@ -10,6 +10,12 @@ import (
 
 const RepocketConfigFile = ".repocket"
 
+type Config struct {
+	ConsumerKey string `required:"true" split_words:"true"`
+	AccessToken string
+	OutputDir   string `split_words:"true"`
+}
+
 func LoadLocalConfig() (string, error) {
 	usr, err := user.Current()
 	if err != nil {

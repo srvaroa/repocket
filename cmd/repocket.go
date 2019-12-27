@@ -13,12 +13,6 @@ import (
 	"github.com/srvaroa/repocket/pkg/repocket"
 )
 
-type config struct {
-	ConsumerKey string `required:"true" split_words:"true"`
-	AccessToken string
-	OutputDir   string `split_words:"true"`
-}
-
 func ensureDir(path string) {
 	f, err := os.Stat(path)
 	if os.IsNotExist(err) {
@@ -72,8 +66,8 @@ func dumpArticle(outputDir string, a *pocket.Article) {
 	}
 }
 
-func makeConfig() config {
-	cfg := config{}
+func makeConfig() repocket.Config {
+	cfg := repocket.Config{}
 	err := envconfig.Process("REPOCKET", &cfg)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -81,7 +75,7 @@ func makeConfig() config {
 	return cfg
 }
 
-func authenticate(cfg *config) {
+func authenticate(cfg *repocket.Config) {
 	var err error
 	cfg.AccessToken, err = repocket.LoadLocalConfig()
 	if err != nil {
@@ -100,7 +94,7 @@ func authenticate(cfg *config) {
 
 // dump reads all articles marked as favourite and dumps them in the
 // desired output directory
-func dump(cfg config) {
+func dump(cfg repocket.Config) {
 	favs := pocket.QueryFavourites(cfg.AccessToken, cfg.ConsumerKey)
 	if len(cfg.OutputDir) == 0 {
 		log.Fatalf("No output directory provided " +
@@ -113,7 +107,7 @@ func dump(cfg config) {
 }
 
 // list all the starred articles
-func list(cfg config) {
+func list(cfg repocket.Config) {
 	favs := pocket.QueryFavourites(cfg.AccessToken, cfg.ConsumerKey)
 	for _, item := range favs {
 		log.Println(fmt.Sprintf("| %-50.50s | %s", item.ResolvedTitle, item.ResolvedUrl))
@@ -121,7 +115,7 @@ func list(cfg config) {
 }
 
 // next dumps the next unread article
-func next(cfg config) {
+func next(cfg repocket.Config) {
 	favs := pocket.QueryNewest(cfg.AccessToken, cfg.ConsumerKey, 1)
 	for _, a := range favs {
 		out, err := getArticleContents(&a)
