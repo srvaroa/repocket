@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"regexp"
 
-	"github.com/kelseyhightower/envconfig"
 	"github.com/srvaroa/repocket/pkg/pocket"
 	"github.com/srvaroa/repocket/pkg/repocket"
 )
@@ -66,29 +65,27 @@ func dumpArticle(outputDir string, a *pocket.Article) {
 	}
 }
 
-func makeConfig() repocket.Config {
-	cfg := repocket.Config{}
-	err := envconfig.Process("REPOCKET", &cfg)
-	if err != nil {
-		log.Fatal(err.Error())
+func authenticate(cfg repocket.Config) {
+	if len(cfg.AccessToken) > 0 {
+		return
 	}
-	return cfg
-}
+	if len(cfg.ConsumerKey) <= 0 {
+		log.Fatalf("Your config file seems empty.  It should contain " +
+			"at least an entry with the consumer_key.  Please check the " +
+			"README.md for details")
+	}
 
-func authenticate(cfg *repocket.Config) {
+	log.Printf("Loading access token..")
+
 	var err error
-	cfg.AccessToken, err = repocket.LoadLocalConfig()
+	cfg.AccessToken, err = pocket.Authorize(cfg.ConsumerKey)
 	if err != nil {
-		log.Printf("Could not load local config, authorizing against"+
-			" GetPocket's API: %s", err)
-		cfg.AccessToken, err = pocket.Authorize(cfg.ConsumerKey)
-		if err != nil {
-			log.Fatal("Failed to authorize against Pocket: %s", err)
-		}
-		err = repocket.SaveLocalConfig(cfg.AccessToken)
-		if err != nil {
-			log.Printf("Failed to persist user token: %s", err)
-		}
+		log.Fatal("Failed to authorize against Pocket: %s", err)
+	}
+
+	err = cfg.SaveConfig()
+	if err != nil {
+		log.Printf("Failed to persist user token: %s", err)
 	}
 }
 
@@ -147,8 +144,12 @@ func main() {
 
 	cmd := os.Args[1]
 
-	cfg := makeConfig()
-	authenticate(&cfg)
+	cfg := repocket.Config{}
+	err := cfg.LoadConfig()
+	if err != nil {
+		log.Fatalf("Unable to load configuration!", err)
+	}
+	authenticate(cfg)
 
 	switch cmd {
 	case "dump":
