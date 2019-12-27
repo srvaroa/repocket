@@ -27,17 +27,21 @@ Configuration
 -------------
 
 You must create the config file before running `Repocket`.  It's a very
-simple yaml with these contents:
+simple yaml stored at `~/.repocket/config` with these contents:
 
     consumer_key: 85480-9793dd8ed508561cb941d987
-    output_dir: <target_directory_for_dump>
+    favs_dir: <absolute_path_dir_for_favourited_links>
+    unread_dir: <absolute_path_dir_for_unread_links>
 
 The `consumer_key` indicates the GetPocket Application.  You can leave
 the sample value above (my own app), but of you prefer to use your own
 just [create a new application](https://getpocket.com/developer/apps/new).
 
-The `output_dir` is the directory where all files with downloaded
-articles will be stored.  If empty, it defaults to `./repocket`.
+The `favs_dir` is the directory where favourited articles will be
+downloaded.  Expects an absolute path.
+
+The `unread_dir` is the directory where unread, non archived articles
+will be downloaded.  Expects an absolute path. 
 
 When you first run `Repocket`, it will authenticate against the Pocket
 API.  It will ask you to browse to a URL where you can grant permissions
@@ -55,10 +59,14 @@ so you don't need to auth again.
 Exporting your list
 -------------------
 
-Once you're done, click enter on the console and watch articles being
-downloaded.
+Run
 
-You can run the same command several times and it'll skip through
+    GO111MODULE=on go run ./cmd/repocket [favs|unread|archive]
+
+Use `favs` to download only favourited articles, `unread` for queued
+ones.
+
+You can run any command several times and it'll skip through
 articles that are already downloaded, adding only new ones.
 
 TODO
@@ -66,5 +74,11 @@ TODO
 
 Some things I'd like to implement:
 
-* Don't download the entire list, using the "since" parameter to
-  retrieve new articles from the last run. 
+* Paginate and download only changes since the last sync.  Not sure if
+  this plays well with the point below.
+* I'm converging to the idea that an ideal workflow is to sync both my
+  favs and unread folders regularly and move files from unread -> favs
+  whenever I want to keep it.  When this happens, I want a additional
+  sync back to GetPocket (e.g. mark the item as favourited).  But: how
+  does a deletion work?
+* Prepend the source URL to the file.

@@ -9,12 +9,13 @@ import (
 	"os/user"
 )
 
-const RepocketConfigFile = ".repocket"
+const RepocketConfigFile = ".repocket/config"
 
 type Config struct {
 	ConsumerKey string `yaml:"consumer_key"`
 	AccessToken string `yaml:"access_token"`
-	OutputDir   string `yaml:"output_dir"`
+	FavsDir     string `yaml:"favs_dir"`
+	UnreadDir   string `yaml:"unread_dir"`
 }
 
 func (cfg *Config) LoadConfig() error {

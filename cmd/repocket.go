@@ -89,17 +89,29 @@ func authenticate(cfg repocket.Config) {
 	}
 }
 
-// dump reads all articles marked as favourite and dumps them in the
-// desired output directory
-func dump(cfg repocket.Config) {
+// favs reads all articles marked as favourite and dumps them in the
+// corresponding directory
+func favs(cfg repocket.Config) {
 	favs := pocket.QueryFavourites(cfg.AccessToken, cfg.ConsumerKey)
-	if len(cfg.OutputDir) == 0 {
-		log.Fatalf("No output directory provided " +
-			"(expected at the REPOCKET_OUTPUT_DIR env variable)")
+	if len(cfg.FavsDir) == 0 {
+		log.Fatalf("No output directory provided")
 	}
-	ensureDir(cfg.OutputDir)
+	ensureDir(cfg.FavsDir)
 	for _, item := range favs {
-		dumpArticle(cfg.OutputDir, &item)
+		dumpArticle(cfg.FavsDir, &item)
+	}
+}
+
+// unread reads all articles not archived and stores them in the
+// corresponding directory
+func unread(cfg repocket.Config) {
+	favs := pocket.QueryUnread(cfg.AccessToken, cfg.ConsumerKey)
+	if len(cfg.UnreadDir) == 0 {
+		log.Fatalf("No output directory provided")
+	}
+	ensureDir(cfg.UnreadDir)
+	for _, item := range favs {
+		dumpArticle(cfg.UnreadDir, &item)
 	}
 }
 
@@ -126,7 +138,7 @@ func next(cfg repocket.Config) {
 type logWriter struct{}
 
 func usageAndExit() {
-	log.Fatal("Usage: %s [dump|list]\n", os.Args[0])
+	log.Fatal("Usage: %s [favs|list|queue|next]\n", os.Args[0])
 }
 
 func (writer logWriter) Write(bytes []byte) (int, error) {
@@ -152,8 +164,11 @@ func main() {
 	authenticate(cfg)
 
 	switch cmd {
-	case "dump":
-		dump(cfg)
+	case "favs":
+		favs(cfg)
+		break
+	case "unread":
+		unread(cfg)
 		break
 	case "list":
 		list(cfg)

@@ -40,21 +40,32 @@ type Article struct {
 
 const apiUrl = "https://getpocket.com/v3"
 
+const (
+	STATE_ALL     = "all"
+	STATE_UNREAD  = "unread"
+	STATE_ARCHIVE = "archive"
+)
+
 func QueryFavourites(accessToken, consumerKey string) map[string]Article {
-	return query(accessToken, consumerKey, 1, 0)
+	return query(accessToken, consumerKey, STATE_ALL, 1, 0)
 }
 
 func QueryNewest(accessToken, consumerKey string, count int) map[string]Article {
-	return query(accessToken, consumerKey, 0, count)
+	return query(accessToken, consumerKey, STATE_UNREAD, 0, count)
 }
 
-func query(accessToken, consumerKey string, favourites, count int) map[string]Article {
+func QueryUnread(accessToken, consumerKey string) map[string]Article {
+	return query(accessToken, consumerKey, STATE_UNREAD, 0, 0)
+}
+
+func query(accessToken, consumerKey, state string, favourites, count int) map[string]Article {
 
 	payload := map[string]interface{}{
 		"access_token": accessToken,
 		"consumer_key": consumerKey,
 		"favorite":     favourites,
 		"sort":         "newest",
+		"state":        state,
 	}
 
 	if count > 0 {
