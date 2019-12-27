@@ -1,6 +1,13 @@
+# Some make settings
+SHELL := bash
+.SHELLFLAGS := -eu -o pipefail -c  
+.ONESHELL:
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
+
+# Repocket specific
 OUTPUT_DIR ?= ./repocket
 CONSUMER_KEY ?= 85480-9793dd8ed508561cb941d987
-
 GO = env GO111MODULE=on go
 
 run:
