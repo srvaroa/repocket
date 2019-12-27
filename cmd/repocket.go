@@ -121,16 +121,14 @@ func list(cfg config) {
 }
 
 // next dumps the next unread article
-// TODO: actually do this
 func next(cfg config) {
-	favs := pocket.QueryFavourites(cfg.AccessToken, cfg.ConsumerKey)
+	favs := pocket.QueryNewest(cfg.AccessToken, cfg.ConsumerKey, 1)
 	for _, a := range favs {
 		out, err := getArticleContents(&a)
 		if err != nil {
 			log.Fatalf("Failed to get article contents: %s", err)
 		}
 		log.Printf("%s", out)
-		break // TODO ahem
 	}
 }
 
