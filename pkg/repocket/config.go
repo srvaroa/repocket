@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"os/user"
+
+	"github.com/srvaroa/repocket/pkg/pocket"
 )
 
 const RepocketConfigFile = ".repocket/config"
@@ -18,7 +20,7 @@ type Config struct {
 	UnreadDir   string `yaml:"unread_dir"`
 }
 
-func (cfg *Config) LoadConfig() error {
+func (cfg *Config) Load() error {
 
 	usr, err := user.Current()
 	if err != nil {
@@ -38,7 +40,7 @@ func (cfg *Config) LoadConfig() error {
 	return err
 }
 
-func (cfg *Config) SaveConfig() error {
+func (cfg *Config) Save() error {
 
 	usr, err := user.Current()
 	if err != nil {
@@ -59,4 +61,32 @@ func (cfg *Config) SaveConfig() error {
 	}
 
 	return err
+}
+
+// Authenticate will ensure that a given Config object is autheticated,
+// either by providing a ConsumerKey and AccessToken, or running the
+// oauth auth process.  In the latter case, the token is persisted in
+// the config file.
+func (cfg *Config) Authenticate() {
+	if len(cfg.AccessToken) > 0 {
+		return
+	}
+	if len(cfg.ConsumerKey) <= 0 {
+		log.Fatalf("Your config file seems empty.  It should contain " +
+			"at least an entry with the consumer_key.  Please check the " +
+			"README.md for details")
+	}
+
+	log.Printf("Loading access token..")
+
+	var err error
+	cfg.AccessToken, err = pocket.Authorize(cfg.ConsumerKey)
+	if err != nil {
+		log.Fatal("Failed to authorize against Pocket: %s", err)
+	}
+
+	err = cfg.Save()
+	if err != nil {
+		log.Printf("Failed to persist user token: %s", err)
+	}
 }

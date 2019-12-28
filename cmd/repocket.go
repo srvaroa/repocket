@@ -65,30 +65,6 @@ func dumpArticle(outputDir string, a *pocket.Article) {
 	}
 }
 
-func authenticate(cfg repocket.Config) {
-	if len(cfg.AccessToken) > 0 {
-		return
-	}
-	if len(cfg.ConsumerKey) <= 0 {
-		log.Fatalf("Your config file seems empty.  It should contain " +
-			"at least an entry with the consumer_key.  Please check the " +
-			"README.md for details")
-	}
-
-	log.Printf("Loading access token..")
-
-	var err error
-	cfg.AccessToken, err = pocket.Authorize(cfg.ConsumerKey)
-	if err != nil {
-		log.Fatal("Failed to authorize against Pocket: %s", err)
-	}
-
-	err = cfg.SaveConfig()
-	if err != nil {
-		log.Printf("Failed to persist user token: %s", err)
-	}
-}
-
 // favs reads all articles marked as favourite and dumps them in the
 // corresponding directory
 func favs(cfg repocket.Config) {
@@ -157,11 +133,11 @@ func main() {
 	cmd := os.Args[1]
 
 	cfg := repocket.Config{}
-	err := cfg.LoadConfig()
+	err := cfg.Load()
 	if err != nil {
 		log.Fatalf("Unable to load configuration!", err)
 	}
-	authenticate(cfg)
+	cfg.Authenticate()
 
 	switch cmd {
 	case "favs":
