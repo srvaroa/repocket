@@ -9,12 +9,19 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
 // https://getpocket.com/developer/docs/v3/retrieve
 type retrieveResponse struct {
 	Status int
 	List   map[string]Article
+}
+
+// https://getpocket.com/developer/docs/v3/send
+type sendResponse struct {
+	ActionResults bool
+	Status        int
 }
 
 // https://getpocket.com/developer/docs/v3/retrieve
@@ -46,6 +53,12 @@ const (
 	STATE_ARCHIVE = "archive"
 )
 
+const (
+	ACTION_DELETE   = "delete"
+	ACTION_FAVORITE = "favorite"
+	ACTION_ARCHIVE  = "archive"
+)
+
 func QueryFavourites(accessToken, consumerKey string) map[string]Article {
 	return query(accessToken, consumerKey, STATE_ALL, 1, 0)
 }
@@ -64,6 +77,7 @@ func query(accessToken, consumerKey, state string, favourites, count int) map[st
 		"access_token": accessToken,
 		"consumer_key": consumerKey,
 		"favorite":     favourites,
+		"detailType":   "complete",
 		"sort":         "newest",
 		"state":        state,
 	}
@@ -81,7 +95,7 @@ func query(accessToken, consumerKey, state string, favourites, count int) map[st
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Fatal("Unable to retrieve token", err)
+		log.Fatal("Unable to retrieve items", err)
 	}
 
 	var retrieved retrieveResponse
@@ -89,6 +103,65 @@ func query(accessToken, consumerKey, state string, favourites, count int) map[st
 	json.Unmarshal(body, &retrieved)
 
 	return retrieved.List
+
+}
+
+func Archive(accessToken, consumerKey string, itemIds []string) bool {
+	return action(ACTION_ARCHIVE, accessToken, consumerKey, itemIds)
+}
+
+func Delete(accessToken, consumerKey string, itemIds []string) bool {
+	return action(ACTION_DELETE, accessToken, consumerKey, itemIds)
+}
+
+func Fav(accessToken, consumerKey string, itemIds []string) bool {
+	return action(ACTION_FAVORITE, accessToken, consumerKey, itemIds)
+}
+
+func action(action, accessToken, consumerKey string, itemIds []string) bool {
+
+	timestamp := time.Now().UTC()
+	var actions []map[string]interface{}
+
+	if len(itemIds) <= 0 {
+		return true
+	}
+
+	for _, itemId := range itemIds {
+		actions = append(actions, map[string]interface{}{
+			"action":    action,
+			"item_id":   itemId,
+			"timestamp": timestamp,
+		})
+	}
+
+	payload := map[string]interface{}{
+		"access_token": accessToken,
+		"consumer_key": consumerKey,
+		"actions":      actions,
+	}
+
+	data, _ := json.Marshal(payload)
+
+	res, err := http.Post(apiUrl+"/send",
+		"application/json",
+		strings.NewReader(string(data)))
+
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal("Unable to delete items", err)
+	}
+
+	if res.StatusCode != 200 {
+		log.Fatalf("Error deleting items %v \n", res.Header)
+	}
+
+	var deleted sendResponse
+
+	json.Unmarshal(body, &deleted)
+
+	return deleted.ActionResults
 
 }
 

@@ -1,26 +1,29 @@
 package repocket
 
 import (
-	"gopkg.in/yaml.v3"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/user"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/srvaroa/repocket/pkg/pocket"
 )
 
 const RepocketConfigFile = ".repocket/config"
 
-type Config struct {
+type Repocket struct {
 	ConsumerKey string `yaml:"consumer_key"`
 	AccessToken string `yaml:"access_token"`
 	FavsDir     string `yaml:"favs_dir"`
 	UnreadDir   string `yaml:"unread_dir"`
+	DeletedDir  string `yaml:"deleted_dir"`
+	ArchivedDir string `yaml:"archived_dir"`
 }
 
-func (cfg *Config) Load() error {
+func (cfg *Repocket) Load() error {
 
 	usr, err := user.Current()
 	if err != nil {
@@ -40,7 +43,7 @@ func (cfg *Config) Load() error {
 	return err
 }
 
-func (cfg *Config) Save() error {
+func (cfg *Repocket) Save() error {
 
 	usr, err := user.Current()
 	if err != nil {
@@ -63,15 +66,15 @@ func (cfg *Config) Save() error {
 	return err
 }
 
-// Authenticate will ensure that a given Config object is autheticated,
+// Authenticate will ensure that a given Repocket object is autheticated,
 // either by providing a ConsumerKey and AccessToken, or running the
 // oauth auth process.  In the latter case, the token is persisted in
 // the config file.
-func (cfg *Config) Authenticate() {
-	if len(cfg.AccessToken) > 0 {
+func (r *Repocket) Authenticate() {
+	if len(r.AccessToken) > 0 {
 		return
 	}
-	if len(cfg.ConsumerKey) <= 0 {
+	if len(r.ConsumerKey) <= 0 {
 		log.Fatalf("Your config file seems empty.  It should contain " +
 			"at least an entry with the consumer_key.  Please check the " +
 			"README.md for details")
@@ -80,12 +83,12 @@ func (cfg *Config) Authenticate() {
 	log.Printf("Loading access token..")
 
 	var err error
-	cfg.AccessToken, err = pocket.Authorize(cfg.ConsumerKey)
+	r.AccessToken, err = pocket.Authorize(r.ConsumerKey)
 	if err != nil {
 		log.Fatal("Failed to authorize against Pocket: %s", err)
 	}
 
-	err = cfg.Save()
+	err = r.Save()
 	if err != nil {
 		log.Printf("Failed to persist user token: %s", err)
 	}

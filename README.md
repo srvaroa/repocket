@@ -1,21 +1,30 @@
 Repocket
 ========
 
-Repocket is a (very, very raw) tool to download favourited articles on
-[Pocket](https://getpocket.com).  Because, you know, The Cloud is not a
-reliable storage.  Also, grep.
+**Repocket** is a (very, very raw) tool to manage a local copy of articles
+from GetPocket [Pocket](https://getpocket.com).  Because, you know, The
+Cloud is not a reliable storage.  Also, grep.  Local copies contain a
+header in plain YAML with the [metadata provided by
+Pocket](https://getpocket.com/developer/docs/v3/retrieve)
 
-Repocket has some basic operations:
+**Repocket** maintains a simple folder structure to represent states.
+Articles are rendered as text files into two folders for unread and
+favourite articles.  You can move articles to a deleted and archived
+folders to sync those statuses back to Pocket.
 
-* `dump`: to retrieve the list of starred links, download a plain text
-  copy of the link, and store it in disk.  It works in Linux, might work
-  in OSX (untested) and will very likely not in Windows (although it
-  should be trivial to fix.)
-* `list`: to retrieve the list of favourited articles (title, url)
-* `next`: to dump the contents of the newest article in your list
+**Caveat emptor**
 
-Dependencies
-------------
+* Local copies are plain text, rendered with
+  [w3m](http://w3m.sourceforge.net/), so expect images to be lost.  I'm
+  generally OK with this, and the original URLs are still there.
+* This workflow is not meant to be particularly user friendly, it just
+  fits me well.  I use the "favourite" state to mark articles that I
+  want to keep a copy for.
+* It works in Linux, might work in OSX (untested) and will very likely
+  not in Windows (although it should be trivial to fix.)
+
+Building
+--------
 
 Go >= 1.11.
 
@@ -30,18 +39,40 @@ You must create the config file before running `Repocket`.  It's a very
 simple yaml stored at `~/.repocket/config` with these contents:
 
     consumer_key: 85480-9793dd8ed508561cb941d987
-    favs_dir: <absolute_path_dir_for_favourited_links>
-    unread_dir: <absolute_path_dir_for_unread_links>
+    favs_dir: <absolute_path_dir_for_favourited_articles>
+    unread_dir: <absolute_path_dir_for_unread_articles>
+    deleted_dir: <absolute_path_dir_for_deleted_articles>
+    archived_dir: <absolute_path_dir_for_archived_articles>
 
-The `consumer_key` indicates the GetPocket Application.  You can leave
-the sample value above (my own app), but of you prefer to use your own
-just [create a new application](https://getpocket.com/developer/apps/new).
+* The `consumer_key` indicates the GetPocket Application.  You can leave
+  the sample value above (my own app), but of you prefer to use your own
+  just [create a new
+  application](https://getpocket.com/developer/apps/new).
 
-The `favs_dir` is the directory where favourited articles will be
-downloaded.  Expects an absolute path.
+The rest are directories to store articles.  All expect an absolute
+path.  Two of these are synced up and downstream:
 
-The `unread_dir` is the directory where unread, non archived articles
-will be downloaded.  Expects an absolute path. 
+* `unread_dir` is the directory where unread, non archived articles will
+  be downloaded.  If a downloaded article is marked as archived in
+  Pocket, then the file will be deleted.
+* `favs_dir` contains favourited articles.  You move articles here from
+  the `unread_dir`, in the next sync they will be marked as favourite
+  and archived.  Articles in your local fav directory are *never*
+  deleted (even if you unfav them upstream.)
+
+These directories *only sync upstream*:
+
+* `deleted_dir` contains articles that should be deleted in the next run
+  of the `delete` command.  You move articles here when you want to
+  delete them from Pocket.
+* `archived_dir` contains articles that should be archived in the next run
+  of the `archive` command.  YOu move articles here when you want to
+  archive them in Pocket, but don't want to keep a local copy.
+
+Files in both `deleted_dir` and `archived_dir` are removed after a sync.
+
+Set up
+------
 
 When you first run `Repocket`, it will authenticate against the Pocket
 API.  It will ask you to browse to a URL where you can grant permissions
@@ -56,29 +87,18 @@ first time, you simply need to click the link and ignore the browser.
 This step will write a new `access_token` property to your config file
 so you don't need to auth again.
 
-Exporting your list
--------------------
+Synchronizing
+-------------
 
 Run
 
-    GO111MODULE=on go run ./cmd/repocket [favs|unread|archive]
+    GO111MODULE=on go run ./cmd/repocket [favs|delete|unread|archive]
 
-Use `favs` to download only favourited articles, `unread` for queued
-ones.
-
-You can run any command several times and it'll skip through
-articles that are already downloaded, adding only new ones.
+And **Repocket** will sync the folder associated to the given action.
 
 TODO
 ----
 
 Some things I'd like to implement:
 
-* Paginate and download only changes since the last sync.  Not sure if
-  this plays well with the point below.
-* I'm converging to the idea that an ideal workflow is to sync both my
-  favs and unread folders regularly and move files from unread -> favs
-  whenever I want to keep it.  When this happens, I want a additional
-  sync back to GetPocket (e.g. mark the item as favourited).  But: how
-  does a deletion work?
 * Prepend the source URL to the file.

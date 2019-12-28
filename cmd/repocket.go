@@ -1,130 +1,21 @@
 package main
 
 import (
-	"fmt"
-	"io"
 	"log"
 	"os"
-	"os/exec"
-	"regexp"
 
-	"github.com/srvaroa/repocket/pkg/pocket"
 	"github.com/srvaroa/repocket/pkg/repocket"
+	"github.com/srvaroa/repocket/pkg/util"
 )
-
-func ensureDir(path string) {
-	f, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		if err != nil {
-			log.Fatalf("ERROR: expecting directory %s to exist", path)
-		}
-	}
-	if !f.IsDir() {
-		log.Fatalf("ERROR: expecting path %s to be a directory", path)
-	}
-}
-
-func getArticleContents(a *pocket.Article) ([]byte, error) {
-	return exec.Command("w3m", "-dump", a.ResolvedUrl).Output()
-}
-
-func dumpArticle(outputDir string, a *pocket.Article) {
-
-	// Clean up path
-	re := regexp.MustCompile(`[\.|/\\]+`)
-	path := outputDir + "/" +
-		a.ItemId +
-		"_" +
-		string(re.ReplaceAll([]byte(a.ResolvedTitle), []byte("-")))
-
-	// If the article is there, leave it alone
-	_, err := os.Stat(path)
-	if !os.IsNotExist(err) {
-		log.Printf("Skipping (already downloaded): %s", a.ResolvedTitle)
-		return
-	}
-
-	log.Printf("Downloading: `%s` to `%s`", a.ResolvedTitle, path)
-
-	out, err := getArticleContents(a)
-	if err != nil {
-		log.Print("Failed to download %s, %s", a.ResolvedUrl, err)
-		return
-	}
-
-	file, err := os.Create(path)
-	if err != nil {
-		log.Printf("Failed to create file for %s: %s", a.ResolvedTitle, err)
-		return
-	}
-	defer file.Close()
-
-	_, err = io.WriteString(file, string(out))
-	if err != nil {
-		log.Printf("Failed to write %s: %s", a.ResolvedTitle, err)
-	}
-}
-
-// favs reads all articles marked as favourite and dumps them in the
-// corresponding directory
-func favs(cfg repocket.Config) {
-	favs := pocket.QueryFavourites(cfg.AccessToken, cfg.ConsumerKey)
-	if len(cfg.FavsDir) == 0 {
-		log.Fatalf("No output directory provided")
-	}
-	ensureDir(cfg.FavsDir)
-	for _, item := range favs {
-		dumpArticle(cfg.FavsDir, &item)
-	}
-}
-
-// unread reads all articles not archived and stores them in the
-// corresponding directory
-func unread(cfg repocket.Config) {
-	favs := pocket.QueryUnread(cfg.AccessToken, cfg.ConsumerKey)
-	if len(cfg.UnreadDir) == 0 {
-		log.Fatalf("No output directory provided")
-	}
-	ensureDir(cfg.UnreadDir)
-	for _, item := range favs {
-		dumpArticle(cfg.UnreadDir, &item)
-	}
-}
-
-// list all the starred articles
-func list(cfg repocket.Config) {
-	favs := pocket.QueryFavourites(cfg.AccessToken, cfg.ConsumerKey)
-	for _, item := range favs {
-		log.Println(fmt.Sprintf("| %-50.50s | %s", item.ResolvedTitle, item.ResolvedUrl))
-	}
-}
-
-// next dumps the next unread article
-func next(cfg repocket.Config) {
-	favs := pocket.QueryNewest(cfg.AccessToken, cfg.ConsumerKey, 1)
-	for _, a := range favs {
-		out, err := getArticleContents(&a)
-		if err != nil {
-			log.Fatalf("Failed to get article contents: %s", err)
-		}
-		log.Printf("%s", out)
-	}
-}
-
-type logWriter struct{}
 
 func usageAndExit() {
 	log.Fatal("Usage: %s [favs|list|queue|next]\n", os.Args[0])
 }
 
-func (writer logWriter) Write(bytes []byte) (int, error) {
-	return fmt.Print(string(bytes))
-}
-
 func main() {
 
 	log.SetFlags(0)
-	log.SetOutput(new(logWriter))
+	log.SetOutput(new(util.LogWriter))
 
 	if len(os.Args) != 2 {
 		usageAndExit()
@@ -132,25 +23,25 @@ func main() {
 
 	cmd := os.Args[1]
 
-	cfg := repocket.Config{}
-	err := cfg.Load()
+	r := repocket.Repocket{}
+	err := r.Load()
 	if err != nil {
 		log.Fatalf("Unable to load configuration!", err)
 	}
-	cfg.Authenticate()
+	r.Authenticate()
 
 	switch cmd {
+	case "delete":
+		r.SyncDeletions()
+		break
+	case "archive":
+		r.SyncArchived()
+		break
 	case "favs":
-		favs(cfg)
+		r.SyncFavs()
 		break
 	case "unread":
-		unread(cfg)
-		break
-	case "list":
-		list(cfg)
-		break
-	case "next":
-		next(cfg)
+		r.SyncUnread()
 		break
 	default:
 		usageAndExit()
