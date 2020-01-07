@@ -9,7 +9,7 @@ import (
 )
 
 func usageAndExit() {
-	log.Fatal("Usage: %s [favs|list|queue|next]\n", os.Args[0])
+	log.Fatal("Usage: %s [favs|delete|unread|sync]\n", os.Args[0])
 }
 
 func main() {
@@ -41,6 +41,14 @@ func main() {
 		r.SyncFavs()
 		break
 	case "unread":
+		r.SyncUnread()
+		break
+	case "sync":
+		log.Printf("Full sync.  First push deletions..")
+		r.SyncDeletions()
+		log.Printf("Then push favs..")
+		r.SyncFavs()
+		log.Printf("Then pull unreads..")
 		r.SyncUnread()
 		break
 	default:
