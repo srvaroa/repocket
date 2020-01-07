@@ -92,11 +92,13 @@ Synchronizing
 
 Run
 
-    GO111MODULE=on go run ./cmd/repocket [favs|delete|unread|sync]
+    GO111MODULE=on go run ./cmd/repocket [favs|delete|archive|unread|sync]
 
 And **Repocket** will sync the folder associated to the given action.
 
 * `delete`: will delete articles added to `favs_dir` as deleted in
+  Pocket. 
+* `archive`: will delete articles added to `favs_dir` as deleted in
   Pocket. 
 * `favs`: will mark articles added to `favs_dir` as favourited in
   Pocket.
