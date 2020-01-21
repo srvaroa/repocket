@@ -2,7 +2,7 @@ Repocket
 ========
 
 **Repocket** is a (very, very raw) tool to manage a local copy of articles
-from GetPocket [Pocket](https://getpocket.com).  Because, you know, The
+from [GetPocket](https://getpocket.com).  Because, you know, The
 Cloud is not a reliable storage.  Also, grep.  Local copies contain a
 header in plain YAML with the [metadata provided by
 Pocket](https://getpocket.com/developer/docs/v3/retrieve)
@@ -45,7 +45,7 @@ simple yaml stored at `~/.repocket/config` with these contents:
     archived_dir: <absolute_path_dir_for_archived_articles>
 
 * The `consumer_key` indicates the GetPocket Application.  You can leave
-  the sample value above (my own app), but of you prefer to use your own
+  the sample value above (my own app), but if you prefer to use your own
   just [create a new
   application](https://getpocket.com/developer/apps/new).
 
@@ -66,7 +66,7 @@ These directories *only sync upstream*:
   of the `delete` command.  You move articles here when you want to
   delete them from Pocket.
 * `archived_dir` contains articles that should be archived in the next run
-  of the `archive` command.  YOu move articles here when you want to
+  of the `archive` command.  You move articles here when you want to
   archive them in Pocket, but don't want to keep a local copy.
 
 Files in both `deleted_dir` and `archived_dir` are removed after a sync.
@@ -76,7 +76,7 @@ Set up
 
 When you first run `Repocket`, it will authenticate against the Pocket
 API.  It will ask you to browse to a URL where you can grant permissions
-to read your list of articles.  The message looks something like this:
+to read your list n articles.  The message looks something like this:
 
     2019/09/09 20:40:12 Browse to this URL, you may ignore errors:
     https://getpocket.com/auth/authorize?request_token=62074b8c-ed8a-b5e5-71f3-586bcf&redirect_uri=localhost
