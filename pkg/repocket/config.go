@@ -12,7 +12,7 @@ import (
 	"github.com/srvaroa/repocket/pkg/pocket"
 )
 
-const RepocketConfigFile = ".repocket/config"
+const RepocketConfigFile = ".config/repocket/config"
 
 type Repocket struct {
 	ConsumerKey string `yaml:"consumer_key"`
