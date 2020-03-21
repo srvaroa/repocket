@@ -36,7 +36,7 @@ Configuration
 -------------
 
 You must create the config file before running `Repocket`.  It's a very
-simple yaml stored at `~/.repocket/config` with these contents:
+simple yaml stored at `~/.config/repocket/config` with these contents:
 
     consumer_key: 85480-9793dd8ed508561cb941d987
     favs_dir: <absolute_path_dir_for_favourited_articles>
