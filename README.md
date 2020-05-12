@@ -20,8 +20,8 @@ folders to sync those statuses back to Pocket.
 * This workflow is not meant to be particularly user friendly, it just
   fits me well.  I use the "favourite" state to mark articles that I
   want to keep a copy for.
-* It works in Linux, might work in OSX (untested) and will very likely
-  not in Windows (although it should be trivial to fix.)
+* It works in Linux and OSX, and will very likely not in Windows
+  (although it should be trivial to fix.)
 
 Building
 --------
